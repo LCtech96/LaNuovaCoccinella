@@ -76,17 +76,6 @@ export default function AdminContentPage() {
     }
   }
 
-  const handleImageUpload = async (type: "cover" | "profile", file: File) => {
-    // Qui implementeresti l'upload dell'immagine
-    // Per ora salva solo il nome del file
-    const imageUrl = `/uploads/${file.name}`
-    if (type === "cover") {
-      setContent({ ...content, coverImage: imageUrl })
-    } else {
-      setContent({ ...content, profileImage: imageUrl })
-    }
-  }
-
   const handleFileUpload = (file: File, callback: (base64: string) => void, isVideo: boolean = false) => {
     // Verifica dimensione file (max 50MB per video, 10MB per immagini)
     const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024
