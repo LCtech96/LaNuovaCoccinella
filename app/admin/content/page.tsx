@@ -87,17 +87,29 @@ export default function AdminContentPage() {
     }
   }
 
-  const handleFileUpload = (file: File, callback: (base64: string) => void) => {
+  const handleFileUpload = (file: File, callback: (base64: string) => void, isVideo: boolean = false) => {
+    // Verifica dimensione file (max 50MB per video, 10MB per immagini)
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      setMessage(isVideo ? "Il video deve essere inferiore a 50MB" : "L'immagine deve essere inferiore a 10MB")
+      setTimeout(() => setMessage(""), 3000)
+      return
+    }
+
     const reader = new FileReader()
     reader.onloadend = () => {
-      const base64Image = reader.result as string
-      callback(base64Image)
+      const base64Data = reader.result as string
+      callback(base64Data)
     }
     reader.onerror = () => {
-      setMessage("Errore durante il caricamento dell'immagine")
+      setMessage(isVideo ? "Errore durante il caricamento del video" : "Errore durante il caricamento dell'immagine")
       setTimeout(() => setMessage(""), 3000)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleVideoUpload = (file: File, callback: (base64: string) => void) => {
+    handleFileUpload(file, callback, true)
   }
 
   const handleDoubleClick = (type: "video" | "image", index: number) => {
@@ -299,9 +311,14 @@ export default function AdminContentPage() {
                 <input
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) handleImageUpload("cover", file)
+                    if (file) {
+                      handleFileUpload(file, (base64) => {
+                        setContent({ ...content, coverImage: base64 })
+                      })
+                    }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                 />
@@ -331,9 +348,14 @@ export default function AdminContentPage() {
                 <input
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) handleImageUpload("profile", file)
+                    if (file) {
+                      handleFileUpload(file, (base64) => {
+                        setContent({ ...content, profileImage: base64 })
+                      })
+                    }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                 />
@@ -378,14 +400,45 @@ export default function AdminContentPage() {
                       {editingItem?.type === "video" && editingItem.index === index ? (
                         <div className="space-y-3">
                           <div>
-                            <label className="text-sm font-semibold mb-1 block">Percorso Video</label>
+                            <label className="text-sm font-semibold mb-1 block">Carica Video</label>
+                            <div className="flex items-center gap-2 mb-2">
+                              <input
+                                type="file"
+                                accept="video/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) {
+                                    handleVideoUpload(file, (base64) => {
+                                      updateVideo(index, "src", base64)
+                                    })
+                                  }
+                                }}
+                                className="hidden"
+                                id={`video-upload-${index}`}
+                              />
+                              <label
+                                htmlFor={`video-upload-${index}`}
+                                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors"
+                              >
+                                <Upload className="w-4 h-4" />
+                                <span>Carica dalla galleria</span>
+                              </label>
+                              {video.src && video.src.startsWith("data:video") && (
+                                <span className="text-xs text-muted-foreground">Video caricato</span>
+                              )}
+                            </div>
                             <input
                               type="text"
-                              value={video.src}
+                              value={video.src.startsWith("data:video") ? "" : video.src}
                               onChange={(e) => updateVideo(index, "src", e.target.value)}
                               className="w-full px-4 py-2 bg-background border border-border rounded-lg"
-                              placeholder="/video/nome-video.mp4"
+                              placeholder="/video/nome-video.mp4 oppure carica dalla galleria"
                             />
+                            {video.src && video.src.startsWith("data:video") && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Video caricato dalla galleria (salva per confermare)
+                              </p>
+                            )}
                           </div>
                           <div>
                             <label className="text-sm font-semibold mb-1 block">Titolo</label>
@@ -502,29 +555,30 @@ export default function AdminContentPage() {
                       <div>
                         <label className="text-xs font-semibold mb-1 block">Immagine</label>
                         <div className="flex items-center gap-2">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                handleFileUpload(file, (base64) => {
-                                  const newImages = [...(content.editableImages || [])]
-                                  newImages[index] = { ...newImages[index], src: base64 }
-                                  setContent({ ...content, editableImages: newImages })
-                                })
-                              }
-                            }}
-                            className="hidden"
-                            id={`editable-image-${index}`}
-                          />
-                          <label
-                            htmlFor={`editable-image-${index}`}
-                            className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded text-sm cursor-pointer hover:bg-primary/90 transition-colors"
-                          >
-                            <Upload className="w-4 h-4" />
-                            <span>Upload Foto</span>
-                          </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              handleFileUpload(file, (base64) => {
+                                const newImages = [...(content.editableImages || [])]
+                                newImages[index] = { ...newImages[index], src: base64 }
+                                setContent({ ...content, editableImages: newImages })
+                              })
+                            }
+                          }}
+                          className="hidden"
+                          id={`editable-image-${index}`}
+                        />
+                        <label
+                          htmlFor={`editable-image-${index}`}
+                          className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded text-sm cursor-pointer hover:bg-primary/90 transition-colors"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span>Carica dalla galleria</span>
+                        </label>
                           {image.src && (
                             <span className="text-xs text-muted-foreground">
                               {image.src.startsWith("data:image") ? "Immagine caricata" : image.src}
@@ -676,6 +730,7 @@ export default function AdminContentPage() {
                           <input
                             type="file"
                             accept="image/*"
+                            capture="environment"
                             onChange={(e) => {
                               const file = e.target.files?.[0]
                               if (file) {
@@ -692,7 +747,7 @@ export default function AdminContentPage() {
                             className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded text-sm cursor-pointer hover:bg-primary/90 transition-colors"
                           >
                             <Upload className="w-4 h-4" />
-                            <span>Upload Foto</span>
+                            <span>Carica dalla galleria</span>
                           </label>
                           {image.src && (
                             <span className="text-xs text-muted-foreground">

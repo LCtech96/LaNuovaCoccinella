@@ -124,8 +124,8 @@ export function AIAssistant() {
 
   return (
     <>
-      {/* Floating Button */}
-      <button
+      {/* Floating Button - Hidden */}
+      {/* <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group hover:scale-110"
         style={{ backgroundColor: "#FF7F7F", color: "white" }}
@@ -136,7 +136,7 @@ export function AIAssistant() {
         ) : (
           <span className="text-sm md:text-base font-bold">AI</span>
         )}
-      </button>
+      </button> */}
 
       {/* Chat Window */}
       {isOpen && (
