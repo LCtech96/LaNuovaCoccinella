@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="barinellocity@gmail.com"
+                  placeholder="anthony316@outlook.it"
                 />
               </div>
             </div>

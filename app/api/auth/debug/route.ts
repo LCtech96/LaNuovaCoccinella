@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabase-server"
 
-const ADMIN_EMAIL = "barinellocity@gmail.com"
-const ADMIN_PASSWORD = "123456789Robetro"
+const ADMIN_EMAIL = "anthony316@outlook.it"
+const ADMIN_PASSWORD = "123456789Cocci"
 
 // Endpoint di debug per verificare le credenziali
 export async function GET(request: NextRequest) {
