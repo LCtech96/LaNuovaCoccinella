@@ -97,22 +97,35 @@ function VideoPlayer({ video, isEven }: { video: Video; isEven: boolean }) {
   )
 }
 
+interface Post {
+  id: string
+  title: string
+  description: string
+  image?: string
+  visible?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([])
   const [images, setImages] = useState<Image[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [barman, setBarman] = useState<{ id: string; src: string; title: string; description: string; visible?: boolean } | null>(null)
   const [cocktails, setCocktails] = useState<Cocktail[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadContent = async () => {
       try {
-        const response = await fetch("/api/content", {
-          cache: "no-store"
-        })
-        if (response.ok) {
-          const data = await response.json()
+        const [contentResponse, postsResponse] = await Promise.all([
+          fetch("/api/content", { cache: "no-store" }),
+          fetch("/api/blog", { cache: "no-store" })
+        ])
+        
+        if (contentResponse.ok) {
+          const data = await contentResponse.json()
           // Filtra solo i video e immagini visibili
           const visibleVideos = (data.videos || []).filter((video: Video) => video.visible !== false)
           const visibleImages = (data.images || []).filter((image: Image) => image.visible !== false)
@@ -125,6 +138,18 @@ export default function Home() {
           if (data.barman && data.barman.visible !== false) {
             setBarman(data.barman)
           }
+        }
+        
+        if (postsResponse.ok) {
+          const postsData: Post[] = await postsResponse.json()
+          const visiblePosts = (postsData || []).filter((post: Post) => post.visible !== false)
+          // Ordina per data di creazione (più recenti primi)
+          visiblePosts.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+            return dateB - dateA
+          })
+          setPosts(visiblePosts)
         }
       } catch (error) {
         console.error("Error loading content:", error)
@@ -649,6 +674,44 @@ export default function Home() {
 
       {/* Description Section */}
       <Description />
+
+      {/* Post del Giorno Section */}
+      {posts.length > 0 && (
+        <div className="container mx-auto px-4 py-12 md:py-16">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              Post del Giorno
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/post/${post.id}`}
+                  className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  {post.image && (
+                    <div className="relative w-full aspect-video bg-muted overflow-hidden">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-muted-foreground line-clamp-3">
+                      {post.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Address Section */}
       <Address />

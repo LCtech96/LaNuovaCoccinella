@@ -128,6 +128,22 @@ export default function AdminDashboard() {
               Modifica immagini, titoli e descrizioni dei membri del team
             </p>
           </Link>
+
+          {/* Bottone 5: Post del Giorno */}
+          <Link
+            href="/admin/posts"
+            className="group bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-4 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                <ImageIcon className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold">Post del Giorno</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Gestisci i post del giorno con immagini, titoli e descrizioni
+            </p>
+          </Link>
         </div>
       </div>
     </main>
