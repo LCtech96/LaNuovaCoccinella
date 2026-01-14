@@ -320,9 +320,11 @@ export default function AdminContentPage() {
           {/* Immagine di copertina */}
           <div className="bg-card border border-border rounded-xl p-4 md:p-6">
             <h2 className="text-lg md:text-xl font-bold mb-4">Immagine di Copertina</h2>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative w-full md:w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              <div className="relative w-full md:w-64 h-40 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                 <img src={content.coverImage} alt="Cover" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 flex flex-col gap-3">
                 <input
                   type="file"
                   accept="image/*"
@@ -334,21 +336,29 @@ export default function AdminContentPage() {
                       })
                     }
                   }}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="hidden"
+                  id="cover-image-upload"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">Clicca sull&apos;immagine per caricare una nuova</p>
-                <input
-                  type="text"
-                  value={content.coverImage}
-                  onChange={(e) => setContent({ ...content, coverImage: e.target.value })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg"
-                  placeholder="/cop.png"
-                />
+                <label
+                  htmlFor="cover-image-upload"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Carica nuova immagine</span>
+                </label>
+                {content.coverImage && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Sei sicuro di voler rimuovere l'immagine di copertina?")) {
+                        setContent({ ...content, coverImage: "/cop.png" })
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Rimuovi immagine</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -356,9 +366,11 @@ export default function AdminContentPage() {
           {/* Immagine profilo */}
           <div className="bg-card border border-border rounded-xl p-4 md:p-6">
             <h2 className="text-lg md:text-xl font-bold mb-4">Immagine Profilo</h2>
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
               <div className="relative w-32 h-32 bg-muted rounded-full overflow-hidden flex-shrink-0 mx-auto md:mx-0">
                 <img src={content.profileImage} alt="Profile" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 flex flex-col gap-3">
                 <input
                   type="file"
                   accept="image/*"
@@ -370,21 +382,29 @@ export default function AdminContentPage() {
                       })
                     }
                   }}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="hidden"
+                  id="profile-image-upload"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">Clicca sull&apos;immagine per caricare una nuova</p>
-                <input
-                  type="text"
-                  value={content.profileImage}
-                  onChange={(e) => setContent({ ...content, profileImage: e.target.value })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg"
-                  placeholder="/profile.png"
-                />
+                <label
+                  htmlFor="profile-image-upload"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Carica nuova immagine</span>
+                </label>
+                {content.profileImage && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Sei sicuro di voler rimuovere l'immagine profilo?")) {
+                        setContent({ ...content, profileImage: "/profile.png" })
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Rimuovi immagine</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
