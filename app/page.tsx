@@ -156,7 +156,7 @@ export default function Home() {
         if (contentResponse.ok) {
           const data = await contentResponse.json()
           // Filtra solo i video e immagini visibili
-          const visibleVideos = (data.videos || []).filter((video: Video) => video.visible !== false)
+          const visibleVideos = (data.videos || []).filter((video: Video) => video.visible !== false && video.src && video.src.trim() !== "")
           const visibleImages = (data.images || []).filter((image: Image) => image.visible !== false)
           const visibleProducts = (data.products || []).filter((product: Product) => product.visible !== false)
           const visibleCocktails = (data.cocktails || []).filter((cocktail: Cocktail) => cocktail.visible !== false)
