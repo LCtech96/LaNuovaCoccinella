@@ -212,7 +212,12 @@ export default function AdminPostsPage() {
                   <div className="flex-1 space-y-4">
                     <div>
                       <label className="text-sm font-semibold mb-2 block">Immagine</label>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                      {post.image && (
+                        <div className="relative w-full md:w-64 h-48 bg-muted rounded-lg overflow-hidden mb-3">
+                          <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="file"
                           accept="image/*"
@@ -232,24 +237,22 @@ export default function AdminPostsPage() {
                           className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors w-full sm:w-auto"
                         >
                           <Upload className="w-4 h-4" />
-                          <span>Carica Immagine</span>
+                          <span>{post.image ? "Sostituisci immagine" : "Carica immagine"}</span>
                         </label>
-                        {post.image && post.image.startsWith("data:image") && (
-                          <span className="text-xs text-muted-foreground">Immagine caricata</span>
+                        {post.image && (
+                          <button
+                            onClick={() => {
+                              if (confirm("Sei sicuro di voler rimuovere l'immagine?")) {
+                                updatePost(index, "image", "")
+                              }
+                            }}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors w-full sm:w-auto"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Rimuovi immagine</span>
+                          </button>
                         )}
                       </div>
-                      {post.image && (
-                        <div className="relative w-full md:w-64 h-48 bg-muted rounded-lg overflow-hidden mt-2">
-                          <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <input
-                        type="text"
-                        value={post.image?.startsWith("data:image") ? "" : (post.image || "")}
-                        onChange={(e) => updatePost(index, "image", e.target.value)}
-                        className="w-full px-4 py-2 bg-background border border-border rounded-lg mt-2"
-                        placeholder="URL immagine o carica dalla galleria"
-                      />
                     </div>
                     <div>
                       <label className="text-sm font-semibold mb-2 block">Titolo</label>
