@@ -6,6 +6,7 @@ import { Description } from "@/components/Description"
 import { Address } from "@/components/Address"
 import { Footer } from "@/components/Footer"
 import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
 
 // Immagini locali
 const coverImage = "/cop.png"
