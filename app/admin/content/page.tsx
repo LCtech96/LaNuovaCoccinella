@@ -57,6 +57,17 @@ export default function AdminContentPage() {
     setSaving(true)
     setMessage("")
     try {
+      // Calcola la dimensione approssimativa del payload
+      const payloadSize = new Blob([JSON.stringify(content)]).size
+      const maxSize = 4.5 * 1024 * 1024 // 4.5MB limite Vercel
+      
+      if (payloadSize > maxSize) {
+        setMessage(`Il contenuto è troppo grande (${(payloadSize / 1024 / 1024).toFixed(2)}MB). Rimuovi alcuni video o immagini grandi o usa URL esterni per video grandi.`)
+        setTimeout(() => setMessage(""), 5000)
+        setSaving(false)
+        return
+      }
+
       const response = await fetch("/api/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,21 +78,36 @@ export default function AdminContentPage() {
         setMessage("Contenuti salvati con successo!")
         setTimeout(() => setMessage(""), 3000)
       } else {
-        setMessage("Errore nel salvataggio")
+        const errorData = await response.json().catch(() => ({}))
+        if (response.status === 413) {
+          setMessage("Errore: il contenuto è troppo grande. Rimuovi alcuni video o immagini grandi.")
+        } else if (response.status === 401) {
+          setMessage("Errore: non sei autenticato. Effettua il login.")
+        } else {
+          setMessage(errorData.error || "Errore nel salvataggio")
+        }
       }
-    } catch (error) {
-      setMessage("Errore nel salvataggio")
+    } catch (error: any) {
+      if (error.message?.includes("413") || error.message?.includes("Content Too Large")) {
+        setMessage("Errore: il contenuto è troppo grande. Rimuovi alcuni video o immagini grandi.")
+      } else {
+        setMessage("Errore nel salvataggio: " + (error.message || "Errore sconosciuto"))
+      }
     } finally {
       setSaving(false)
     }
   }
 
   const handleFileUpload = (file: File, callback: (base64: string) => void, isVideo: boolean = false) => {
-    // Verifica dimensione file (max 50MB per video, 10MB per immagini)
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024
+    // Verifica dimensione file (max 3MB per video a causa del limite Vercel di 4.5MB per request body)
+    // Base64 aumenta la dimensione di ~33%, quindi 3MB file = ~4MB base64, che è sotto il limite
+    const maxSize = isVideo ? 3 * 1024 * 1024 : 5 * 1024 * 1024
     if (file.size > maxSize) {
-      setMessage(isVideo ? "Il video deve essere inferiore a 50MB" : "L'immagine deve essere inferiore a 10MB")
-      setTimeout(() => setMessage(""), 3000)
+      const maxSizeMB = isVideo ? 3 : 5
+      setMessage(isVideo 
+        ? `Il video deve essere inferiore a ${maxSizeMB}MB. Per video più grandi, usa un URL esterno.` 
+        : `L'immagine deve essere inferiore a ${maxSizeMB}MB`)
+      setTimeout(() => setMessage(""), 5000)
       return
     }
 
@@ -260,7 +286,7 @@ export default function AdminContentPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/20 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <Link
               href="/admin"
@@ -269,13 +295,13 @@ export default function AdminContentPage() {
               <ArrowLeft className="w-4 h-4" />
               <span>Torna al pannello</span>
             </Link>
-            <h1 className="text-4xl font-bold mb-2">Gestione Contenuti</h1>
-            <p className="text-muted-foreground">Modifica immagini profilo/copertina e contenuti video/foto (doppio tap per modificare)</p>
+            <h1 className="text-2xl md:text-4xl font-bold mb-2">Gestione Contenuti</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Modifica immagini profilo/copertina e contenuti video/foto (doppio tap per modificare)</p>
           </div>
           <button
             onClick={saveContent}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 w-full md:w-auto"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? "Salvataggio..." : "Salva"}</span>
@@ -292,10 +318,10 @@ export default function AdminContentPage() {
 
         <div className="space-y-6">
           {/* Immagine di copertina */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Immagine di Copertina</h2>
-            <div className="flex gap-4">
-              <div className="relative w-48 h-32 bg-muted rounded-lg overflow-hidden">
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold mb-4">Immagine di Copertina</h2>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative w-full md:w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                 <img src={content.coverImage} alt="Cover" className="w-full h-full object-cover" />
                 <input
                   type="file"
@@ -328,10 +354,10 @@ export default function AdminContentPage() {
           </div>
 
           {/* Immagine profilo */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Immagine Profilo</h2>
-            <div className="flex gap-4">
-              <div className="relative w-32 h-32 bg-muted rounded-full overflow-hidden">
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold mb-4">Immagine Profilo</h2>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative w-32 h-32 bg-muted rounded-full overflow-hidden flex-shrink-0 mx-auto md:mx-0">
                 <img src={content.profileImage} alt="Profile" className="w-full h-full object-cover" />
                 <input
                   type="file"
@@ -364,12 +390,12 @@ export default function AdminContentPage() {
           </div>
 
           {/* Video */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Video</h2>
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <h2 className="text-lg md:text-xl font-bold">Video</h2>
               <button
                 onClick={addVideo}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full md:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 <span>Aggiungi Video</span>
@@ -382,13 +408,13 @@ export default function AdminContentPage() {
                   key={video.id || index}
                   className={`p-4 border border-border rounded-lg ${video.visible === false ? "opacity-50" : ""}`}
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-2">
                     <div className="flex-1">
                       {editingItem?.type === "video" && editingItem.index === index ? (
                         <div className="space-y-3">
                           <div>
                             <label className="text-sm font-semibold mb-1 block">Carica Video</label>
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                               <input
                                 type="file"
                                 accept="video/*"
@@ -405,7 +431,7 @@ export default function AdminContentPage() {
                               />
                               <label
                                 htmlFor={`video-upload-${index}`}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors"
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer hover:bg-primary/90 transition-colors w-full sm:w-auto"
                               >
                                 <Upload className="w-4 h-4" />
                                 <span>Carica dalla galleria</span>
@@ -446,16 +472,16 @@ export default function AdminContentPage() {
                               placeholder="Descrizione"
                             />
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <button
                               onClick={() => setEditingItem(null)}
-                              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+                              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg w-full sm:w-auto"
                             >
                               Salva modifiche
                             </button>
                             <button
                               onClick={() => setEditingItem(null)}
-                              className="px-4 py-2 bg-muted text-muted-foreground rounded-lg"
+                              className="px-4 py-2 bg-muted text-muted-foreground rounded-lg w-full sm:w-auto"
                             >
                               Annulla
                             </button>
@@ -475,7 +501,7 @@ export default function AdminContentPage() {
                       )}
                     </div>
                     {!(editingItem?.type === "video" && editingItem.index === index) && (
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 md:ml-4">
                         <button
                           onClick={() => toggleVideoVisibility(index)}
                           className="p-2 rounded-lg hover:bg-accent transition-colors"
@@ -513,8 +539,8 @@ export default function AdminContentPage() {
           </div>
 
           {/* Immagini Modificabili - Solo le 8 immagini specificate */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div>
                 <h2 className="text-xl font-bold">Immagini Modificabili</h2>
                 <p className="text-sm text-muted-foreground mt-1">Gestisci le immagini: k.png, kj.png, kkk.png, cop.png, ddd.png, dfg.png, 3.png, 9.png</p>
@@ -661,12 +687,12 @@ export default function AdminContentPage() {
           </div>
 
           {/* Immagini */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Immagini</h2>
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <h2 className="text-lg md:text-xl font-bold">Immagini</h2>
               <button
                 onClick={addImage}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full md:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 <span>Aggiungi Immagine</span>
