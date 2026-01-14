@@ -516,7 +516,6 @@ export default function AdminContentPage() {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground mb-1">{video.description}</p>
-                          <p className="text-xs text-muted-foreground">Percorso: {video.src || "Non specificato"}</p>
                         </div>
                       )}
                     </div>

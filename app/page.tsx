@@ -47,6 +47,7 @@ interface Cocktail {
 function VideoPlayer({ video, isEven }: { video: Video; isEven: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     const currentVideo = videoRef.current
@@ -79,21 +80,48 @@ function VideoPlayer({ video, isEven }: { video: Video; isEven: boolean }) {
     }
   }, [])
 
+  // Reset error when video src changes
+  useEffect(() => {
+    setError(false)
+  }, [video.src])
+
   return (
     <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group hover:shadow-3xl transition-all duration-500">
-      <video
-        ref={videoRef}
-        src={video.src}
-        controls={false}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        preload="auto"
-        loop
-        muted
-        playsInline
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        Il tuo browser non supporta il tag video.
-      </video>
+      {error || !video.src ? (
+        <div className="w-full h-full flex items-center justify-center bg-muted/20">
+          <div className="text-center p-4">
+            <p className="text-muted-foreground text-sm">
+              {!video.src ? "Video non disponibile" : "Errore nel caricamento del video"}
+            </p>
+            {video.src && video.src.startsWith("data:video") && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Il video potrebbe essere troppo grande. Prova a usare un video più piccolo o un URL esterno.
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          src={video.src}
+          controls={false}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          preload="auto"
+          loop
+          muted
+          playsInline
+          onContextMenu={(e) => e.preventDefault()}
+          onError={() => {
+            console.error("Video error:", video.src.substring(0, 50))
+            setError(true)
+          }}
+          onLoadedData={() => {
+            setError(false)
+          }}
+        >
+          Il tuo browser non supporta il tag video.
+        </video>
+      )}
     </div>
   )
 }
