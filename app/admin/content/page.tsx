@@ -132,8 +132,10 @@ export default function AdminContentPage() {
   }
 
   const addVideo = () => {
+    // Genera un ID univoco usando timestamp + numero random
+    const uniqueId = `video-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
     const newVideo = {
-      id: `video-${Date.now()}`,
+      id: uniqueId,
       src: "",
       title: "",
       description: "",
