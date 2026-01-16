@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Settings, Utensils, Brain, Image as ImageIcon, LogOut, Users } from "lucide-react"
+import { Settings, Utensils, Brain, Image as ImageIcon, LogOut, Users, UserCheck } from "lucide-react"
 import Link from "next/link"
 
 export default function AdminDashboard() {
@@ -142,6 +142,22 @@ export default function AdminDashboard() {
             </div>
             <p className="text-muted-foreground">
               Gestisci i post del giorno con immagini, titoli e descrizioni
+            </p>
+          </Link>
+
+          {/* Bottone 6: Clienti */}
+          <Link
+            href="/admin/customers"
+            className="group bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-4 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                <UserCheck className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold">Clienti</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Gestisci la lista completa dei clienti in formato tabella modificabile
             </p>
           </Link>
         </div>
