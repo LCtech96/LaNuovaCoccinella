@@ -124,33 +124,129 @@ export default function AdminCustomersPage() {
   }
 
   const parseImportText = (text: string): Customer[] => {
-    const lines = text.trim().split('\n').filter(line => line.trim() && !line.includes("CLIENTI") && !line.includes("Cliente") && !line.includes("---"))
+    const lines = text.trim().split('\n').filter(line => {
+      const trimmed = line.trim()
+      return trimmed && 
+        !trimmed.includes("CLIENTI") && 
+        !trimmed.includes("Cliente Indirizzo") &&
+        !trimmed.includes("---") &&
+        !trimmed.match(/^\d{2}\/\d{2}\/\d{4}/) && // Esclude righe data
+        !trimmed.match(/^easyEVOLVER/) // Esclude header report
+    })
+    
     const importedCustomers: Customer[] = []
+    const cityKeywords = ['TERRASINI', 'CINISI', 'PARMA', 'MILANO', 'FOGGIA', 'ROMA', 'MONTELEPRE', 'GIARDINELLO', 'ORZINUOVI', 'FIUMEFREDDO DI SICILIA']
     
     for (const line of lines) {
-      // Prova a parsare righe separate da pipe (|)
       let parts: string[] = []
+      
       if (line.includes('|')) {
+        // Separato da pipe
         parts = line.split('|').map(p => p.trim())
       } else {
-        // Prova a parsare righe separate da tab o spazi multipli
-        parts = line.split(/\t| {2,}/).map(p => p.trim()).filter(p => p)
+        // Separato da spazi - parsaggio più complesso
+        const trimmed = line.trim()
+        
+        // Prova a trovare la città (ultima parola conosciuta o pattern comune)
+        let citta = ''
+        let cittaIndex = -1
+        
+        for (let i = cityKeywords.length - 1; i >= 0; i--) {
+          const city = cityKeywords[i]
+          const cityPos = trimmed.lastIndexOf(city)
+          if (cityPos !== -1 && (cittaIndex === -1 || cityPos > cittaIndex)) {
+            citta = city
+            cittaIndex = cityPos
+          }
+        }
+        
+        if (cittaIndex === -1) {
+          // Prova a trovare pattern come "CITTA" o "CITTÀ" (tutto maiuscolo alla fine)
+          const words = trimmed.split(/\s+/)
+          if (words.length > 0) {
+            const lastWord = words[words.length - 1].toUpperCase()
+            if (lastWord.length > 3 && lastWord === words[words.length - 1]) {
+              citta = words[words.length - 1]
+              cittaIndex = trimmed.lastIndexOf(citta)
+            }
+          }
+        }
+        
+        if (cittaIndex !== -1) {
+          // Estrai cliente, indirizzo e resto
+          const beforeCity = trimmed.substring(0, cittaIndex).trim()
+          const afterCity = trimmed.substring(cittaIndex + citta.length).trim()
+          
+          // Prova a separare cliente e indirizzo
+          // Il cliente di solito è la prima o le prime due parole
+          const beforeWords = beforeCity.split(/\s+/)
+          
+          let cliente = ''
+          let indirizzo = ''
+          
+          // Se ci sono molte parole, probabilmente cliente è breve (1-3 parole) e il resto è indirizzo
+          if (beforeWords.length <= 3) {
+            cliente = beforeCity
+            indirizzo = ''
+          } else {
+            // Prova a identificare dove finisce il nome cliente (di solito dopo 1-4 parole)
+            // Pattern comune: NUMERO alla fine indica spesso fine indirizzo
+            let splitIndex = Math.min(3, Math.floor(beforeWords.length / 2))
+            cliente = beforeWords.slice(0, splitIndex).join(' ')
+            indirizzo = beforeWords.slice(splitIndex).join(' ')
+          }
+          
+          // Estrai telefono/cellulare (numeri nella parte dopo la città)
+          const phoneRegex = /\b(\d{9,11})\b/g
+          const phones: string[] = []
+          let match
+          while ((match = phoneRegex.exec(afterCity)) !== null) {
+            phones.push(match[1])
+          }
+          
+          // Cerca email
+          const emailRegex = /\b[\w.-]+@[\w.-]+\.\w+\b/i
+          const emailMatch = trimmed.match(emailRegex)
+          const email = emailMatch ? emailMatch[0] : ''
+          
+          // Cerca P.IVA (pattern di 11 cifre o codice alfanumerico)
+          const pivaRegex = /\b[A-Z]{2}\d{11}\b|\b\d{11}\b/
+          const pivaMatch = trimmed.match(pivaRegex)
+          const piva = pivaMatch ? pivaMatch[0] : ''
+          
+          parts = [
+            cliente || beforeWords[0] || '',
+            indirizzo || beforeWords.slice(1).join(' ') || '',
+            citta || '',
+            '', // Provincia spesso non presente
+            piva,
+            phones[0] || '', // Telefono
+            phones[1] || phones[0] || '', // Cellulare
+            email
+          ]
+        } else {
+          // Fallback: split semplice
+          parts = trimmed.split(/\s+/).filter(p => p)
+        }
       }
       
-      if (parts.length >= 1 && parts[0]) {
-        // Mappa i campi: Cliente, Indirizzo, Città, Prov., P. IVA, Telefono, Cellulare, E-M@il
+      if (parts.length >= 1 && parts[0] && parts[0] !== 'CLIENTI') {
         const customer: Customer = {
           id: `customer-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-          cliente: parts[0] || '',
-          indirizzo: parts[1] || '',
-          citta: parts[2] || '',
-          provincia: parts[3] || '',
-          partitaIVA: parts[4] || '',
-          telefono: parts[5] || '',
-          cellulare: parts[6] || '',
-          email: parts[7] || ''
+          cliente: (parts[0] || '').trim(),
+          indirizzo: (parts[1] || '').trim(),
+          citta: (parts[2] || '').trim(),
+          provincia: (parts[3] || '').trim(),
+          partitaIVA: (parts[4] || '').trim(),
+          telefono: (parts[5] || '').trim(),
+          cellulare: (parts[6] || '').trim(),
+          email: (parts[7] || '').trim()
         }
-        importedCustomers.push(customer)
+        
+        // Evita duplicati basati su cliente + citta
+        if (customer.cliente) {
+          importedCustomers.push(customer)
+        }
       }
     }
     
