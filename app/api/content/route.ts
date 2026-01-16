@@ -106,7 +106,7 @@ const DEFAULT_HOME_IMAGES = [
 ]
 
 const DEFAULT_CONTENT = {
-  coverImage: "/cop.png",
+  coverImage: "/sfondo.png",
   profileImage: "/profile.png",
   videos: DEFAULT_VIDEOS,
   images: [],

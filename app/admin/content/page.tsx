@@ -352,7 +352,7 @@ export default function AdminContentPage() {
                   <button
                     onClick={() => {
                       if (confirm("Sei sicuro di voler rimuovere l'immagine di copertina?")) {
-                        setContent({ ...content, coverImage: "/cop.png" })
+                        setContent({ ...content, coverImage: "/sfondo.png" })
                       }
                     }}
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"

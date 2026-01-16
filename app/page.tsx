@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 
 // Immagini locali
-const coverImage = "/cop.png"
+const coverImage = "/sfondo.png"
 const profileImage = "/profile.png"
 
 interface Video {
