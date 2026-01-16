@@ -23,8 +23,6 @@ export function Navigation({ className }: NavigationProps) {
 
   const handleClick = (item: string) => {
     if (item === "menu") {
-      router.push("/menu")
-    } else if (item === "takeaway") {
       router.push("/asporto")
     } else if (item === "booking") {
       router.push("/booking")
@@ -35,8 +33,7 @@ export function Navigation({ className }: NavigationProps) {
   }
 
   const navItems = [
-    { id: "menu", label: "Menù", icon: Menu },
-    { id: "takeaway", label: "Asporto", icon: ShoppingBag },
+    { id: "menu", label: "Menù", icon: ShoppingBag },
     { id: "booking", label: "Booking", icon: Calendar },
   ]
 

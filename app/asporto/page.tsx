@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Navigation } from "@/components/Navigation"
 import { Footer } from "@/components/Footer"
 import Link from "next/link"
-import { ArrowLeft, Phone, Clock, ChevronDown, ChevronUp } from "lucide-react"
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { defaultMenuCategories } from "@/lib/menu-data-default"
 
 interface Dish {
@@ -97,22 +97,7 @@ export default function AsportoPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Asporto</h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-6">
-              Ordina i tuoi piatti preferiti e ritirali direttamente dal ristorante
-            </p>
-            
-            {/* Contact Info */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-8">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="w-5 h-5" />
-                <span>Chiama per ordinare</span>
-              </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-5 h-5" />
-                      <span>Orari: 07:00 - 01:00</span>
-                    </div>
-            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-8">Menù</h1>
           </div>
 
           {/* Menu Categories - Accordion Style */}
