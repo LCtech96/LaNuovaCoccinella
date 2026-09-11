@@ -9,8 +9,8 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 
 // Immagini locali
-const coverImage = "/sfondo.png"
-const profileImage = "/profile.png"
+const coverImage = "/sfondo.webp"
+const profileImage = "/profile.webp"
 
 interface Video {
   id: string

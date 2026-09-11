@@ -18,6 +18,8 @@ export function HeroSection({ coverImage, profileImage }: HeroSectionProps) {
           fill
           className="object-cover"
           priority
+          sizes="100vw"
+          quality={75}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" />
       </div>
@@ -31,7 +33,8 @@ export function HeroSection({ coverImage, profileImage }: HeroSectionProps) {
               alt="La Nuova Coccinella di Salvo & Family"
               fill
               className="object-cover"
-              priority
+              sizes="160px"
+              quality={75}
             />
           </div>
         </div>

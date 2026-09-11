@@ -1,42 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { requireAuth } from "@/lib/auth"
 import { supabaseServer } from "@/lib/supabase-server"
-import { defaultMenuCategories } from "@/lib/menu-data-default"
+import { getMenuCategories } from "@/lib/get-menu"
+
+function jsonWithCache(data: unknown, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
+  })
+}
 
 // GET - Carica il menu
 export async function GET() {
   try {
-    // Prova a caricare da Supabase
-    if (supabaseServer) {
-      const { data, error } = await supabaseServer
-        .from("admin_data")
-        .select("value")
-        .eq("key", "menu")
-        .single()
-
-      if (!error && data && data.value && Array.isArray(data.value) && data.value.length > 0) {
-        // Unisci i dati salvati con i dati di default per assicurarsi che tutte le categorie siano presenti
-        const savedCategories = data.value as typeof defaultMenuCategories
-        const savedTitles = new Set(savedCategories.map((cat: any) => cat.title))
-        
-        // Aggiungi le categorie di default che non sono presenti nei dati salvati
-        const missingCategories = defaultMenuCategories.filter(
-          defaultCat => !savedTitles.has(defaultCat.title)
-        )
-        
-        // Combina i dati salvati con le categorie mancanti
-        const mergedCategories = [...savedCategories, ...missingCategories]
-        
-        return NextResponse.json(mergedCategories)
-      }
-    }
-    
-    // Fallback: restituisci i dati di default con tutte le categorie
-    return NextResponse.json(defaultMenuCategories)
+    const categories = await getMenuCategories()
+    return jsonWithCache(categories)
   } catch (error) {
     console.error("Error loading menu:", error)
-    // In caso di errore, restituisci i dati di default
-    return NextResponse.json(defaultMenuCategories)
+    const { defaultMenuCategories } = await import("@/lib/menu-data-default")
+    return jsonWithCache(defaultMenuCategories)
   }
 }
 
@@ -64,6 +49,8 @@ export async function POST(request: NextRequest) {
         throw error
       }
 
+      revalidateTag("menu")
+      revalidatePath("/asporto")
       return NextResponse.json({ success: true })
     }
     

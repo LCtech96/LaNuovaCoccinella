@@ -3,22 +3,29 @@ import { Inter, Playfair_Display, Cormorant_Garamond } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/ThemeProvider"
 
-const inter = Inter({ subsets: ["latin"] })
-const playfair = Playfair_Display({ 
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+})
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
-  display: "swap"
+  display: "swap",
+  preload: false,
 })
-const cormorant = Cormorant_Garamond({ 
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600"],
   variable: "--font-cormorant",
-  display: "swap"
+  display: "swap",
+  preload: false,
 })
 
 export const metadata: Metadata = {
   title: "La Nuova Coccinella di Salvo & Family - Pizzeria e Polleria a Terrasini",
-  description: "Pizzeria e polleria a Terrasini, Sicilia. Cucina tradizionale con prodotti della massima qualità.",
+  description:
+    "Pizzeria e polleria a Terrasini, Sicilia. Cucina tradizionale con prodotti della massima qualità.",
 }
 
 export default function RootLayout({
@@ -28,25 +35,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it" suppressHydrationWarning>
-      <body className={`${inter.className} ${playfair.variable} ${cormorant.variable} relative`}>
-        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-          <img 
-            src="/sfondo.png"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              filter: "blur(8px)",
-              opacity: 0.5,
-              transform: "scale(1.1)"
-            }}
-          />
-          <div className="absolute inset-0 bg-background/40" />
-        </div>
+      <body
+        className={`${inter.className} ${playfair.variable} ${cormorant.variable} relative`}
+      >
+        <div className="site-bg" aria-hidden="true" />
         <div className="relative z-10 min-h-screen">
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
-            enableSystem
+            enableSystem={false}
             disableTransitionOnChange
           >
             {children}

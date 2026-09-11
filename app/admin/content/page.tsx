@@ -24,7 +24,7 @@ interface Content {
 export default function AdminContentPage() {
   const [content, setContent] = useState<Content>({
     coverImage: "/cop.png",
-    profileImage: "/profile.png",
+    profileImage: "/profile.webp",
     videos: [],
     images: [],
     editableImages: []
@@ -352,7 +352,7 @@ export default function AdminContentPage() {
                   <button
                     onClick={() => {
                       if (confirm("Sei sicuro di voler rimuovere l'immagine di copertina?")) {
-                        setContent({ ...content, coverImage: "/sfondo.png" })
+                        setContent({ ...content, coverImage: "/sfondo.webp" })
                       }
                     }}
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
@@ -398,7 +398,7 @@ export default function AdminContentPage() {
                   <button
                     onClick={() => {
                       if (confirm("Sei sicuro di voler rimuovere l'immagine profilo?")) {
-                        setContent({ ...content, profileImage: "/profile.png" })
+                        setContent({ ...content, profileImage: "/profile.webp" })
                       }
                     }}
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"

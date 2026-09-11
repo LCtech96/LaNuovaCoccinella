@@ -58,6 +58,36 @@
   }
 }
 
+/* Decorative blurred background — tiny WebP, no <img> preload */
+.site-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: hsl(var(--background));
+}
+
+.site-bg::before {
+  content: "";
+  position: absolute;
+  inset: -5%;
+  background-image: url("/sfondo-bg.webp");
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  opacity: 0.5;
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+.site-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: hsl(var(--background) / 0.4);
+}
+
 /* Nascondi controlli audio nei video */
 video::-webkit-media-controls-volume-slider,
 video::-webkit-media-controls-mute-button {
